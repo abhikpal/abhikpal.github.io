@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Abhik Pal">
+    <meta name="description" content="">
+    <title>Simple Music&nbsp;Visualizer | Abhik Pal's Weblog</title>
+    <link rel="stylesheet" type="text/css" href="/theme/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/theme/css/monokai.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+        
+<header>
+<h1>
+    <a href="/blog/2014/01/16/simple-music-visualizer" id="page-title">Simple Music&nbsp;Visualizer</a><br>
+    <small><time datetime="2014-01-16T22:05:32+05:30">
+        Thursday January 16, 2014
+    </time></small>
+</h1>
+<small><a href="/blog/tags/arduino" class="link-box">arduino</a></small>
+<small><a href="/blog/tags/processing" class="link-box">processing</a></small>
+</header>
+<article id="article-main">
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If you are new to serial communication between Arduino and Processing you refer to the (slightly long) tutorial <a class="reference external" href="http://abhikpal.github.io/blog/2013/10/05/getting-started-with-arduino-processing-serial-communication">here</a>.</p>
+</div>
+<p>In my last post I made a <a class="reference external" href="http://abhikpal.github.io/blog/2014/01/01/paper-glowdrons">glowing dodecahedron</a> out of paper and some glue. In this project I convert the same dodecahedron to make a super simple music visualizer using Processing and&nbsp;Arduino.</p>
+<div class="figure">
+<img alt="dodecahedron" src="/images/music_visualizer/dodec.jpg" style="width: 50%;" />
+</div>
+<p>This project uses only one color of the <span class="caps">RGB</span> <span class="caps">LED</span> i.e., you can substitute the <span class="caps">RGB</span> <span class="caps">LED</span> with a usual <span class="caps">LED</span>. (Using the <span class="caps">RGB</span> <span class="caps">LED</span>? The wiring diagrams are on the <a class="reference external" href="http://abhikpal.github.io/blog/2014/01/01/paper-glowdrons">dodecahedron post</a>.</p>
+<p>This is way simpler than Adafruit&#8217;s <a class="reference external" href="http://learn.adafruit.com/piccolo">Piccolo</a> and all it does is change the brightness of the <span class="caps">LED</span> based on average of the values sent to the left and right audio channels. The processing sketch uses the Minim library (included by default in recent versions of Processing) to get the values out of the audio buffer and make some (weird?) visual on the&nbsp;screen.</p>
+<p>We will use the dimmer sketch to convert the values sent by the processing sketch to the equivalent <span class="caps">LED</span> brightness. You can upload the example sketch at &#8216;File &gt;&gt; Examples &gt;&gt; 04.Communication &gt;&gt; Dimmer&#8217; to your Arduino to do this for you. Make sure to change the  <tt class="docutils literal">ledPin</tt> variable to the pin number your <span class="caps">LED</span> is connected to. Compile and upload the sketch. We can now move to the Processing&nbsp;sketch.</p>
+<p>Here is the Processing sketch that we&#8217;ll be&nbsp;using.</p>
+<div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * A Simple Monochromatic sound Visualizer</span>
+<span class="cm"> *</span>
+<span class="cm"> * This sketch plays a sound and sends the average</span>
+<span class="cm"> * values in the audio buffer as integer values to the arduino</span>
+<span class="cm"> * where an LED changes its brightness based on the values sent.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This project is an extension to the &quot;Glowing Dodecahedron&quot;</span>
+<span class="cm"> * project and adds a bit of functionality to the dodecahedron.</span>
+<span class="cm"> * The &quot;Glowing Dodecahedron&quot; project is available with instructions</span>
+<span class="cm"> * and required circuit diagrams at:</span>
+<span class="cm"> * http://theblubot.blogspot.com/2014/01/glowing-dodecahedron.html</span>
+<span class="cm"> *</span>
+<span class="cm"> * design and code by:</span>
+<span class="cm"> * Abhik Pal. 10th January 2014, 23:13</span>
+<span class="cm"> */</span>
+
+<span class="c1">// Importing the Minim and Serial libraries</span>
+<span class="kn">import</span> <span class="nn">ddf.minim.*</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">processing.serial.*</span><span class="o">;</span>
+
+<span class="c1">// creating required objects</span>
+<span class="n">AudioPlayer</span> <span class="n">song</span><span class="o">;</span>
+<span class="n">Minim</span> <span class="n">minim</span><span class="o">;</span>
+<span class="n">Serial</span> <span class="n">port</span><span class="o">;</span>
+
+<span class="c1">// variable to store the value to be sent</span>
+<span class="kt">int</span> <span class="n">sendVal</span> <span class="o">=</span> <span class="mi">255</span><span class="o">;</span>
+
+<span class="c1">// variable to store whether the song is being played or not</span>
+<span class="kt">boolean</span> <span class="n">isPlaying</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="o">()</span>
+<span class="o">{</span>
+  <span class="c1">// setting the size to be the current display size</span>
+  <span class="n">size</span><span class="o">(</span><span class="n">displayWidth</span><span class="o">,</span> <span class="n">displayHeight</span><span class="o">);</span>
+
+  <span class="c1">// setting everything up!</span>
+  <span class="n">minim</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Minim</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+
+  <span class="c1">// make sure to change the stuff inside the</span>
+  <span class="c1">// &quot;quotes&quot; to mathch the file you want to play</span>
+  <span class="c1">// here I&#39;m playing &quot;song.mp3&quot;</span>
+  <span class="n">song</span> <span class="o">=</span> <span class="n">minim</span><span class="o">.</span><span class="na">loadFile</span><span class="o">(</span><span class="s">&quot;song.mp3&quot;</span><span class="o">);</span>
+
+  <span class="c1">// change the COM port to match your Arduino&#39;s COM port</span>
+  <span class="c1">// change the baud Rate if you have used someting</span>
+  <span class="c1">// different from 9600 bauds.</span>
+  <span class="n">port</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Serial</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">&quot;COM5&quot;</span><span class="o">,</span> <span class="mi">9600</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kt">void</span> <span class="nf">draw</span><span class="o">()</span>
+<span class="o">{</span>
+  <span class="c1">// clearing out the screen by creating a rectangle</span>
+  <span class="c1">// having dimentions of the screen size.</span>
+  <span class="n">fill</span><span class="o">(</span><span class="mi">20</span><span class="o">);</span>
+  <span class="n">noStroke</span><span class="o">();</span>
+  <span class="n">rect</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">width</span><span class="o">,</span> <span class="n">height</span><span class="o">);</span>
+
+  <span class="c1">// this loop is used to extract and display visuals</span>
+  <span class="c1">// based on the values present int the audio buffer</span>
+  <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&amp;</span><span class="n">lt</span><span class="o">;</span> <span class="n">song</span><span class="o">.</span><span class="na">bufferSize</span><span class="o">()</span> <span class="o">-</span> <span class="mi">1</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span>
+  <span class="o">{</span>
+    <span class="c1">// variables to store the right and left audio values</span>
+    <span class="c1">// i.e. sound being sent to each left and right speaker.</span>
+    <span class="kt">float</span> <span class="n">rightVal</span> <span class="o">=</span> <span class="n">song</span><span class="o">.</span><span class="na">right</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+    <span class="kt">float</span> <span class="n">leftVal</span> <span class="o">=</span> <span class="n">song</span><span class="o">.</span><span class="na">left</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">);</span>
+
+    <span class="c1">// the next few lines account for the pattern being</span>
+    <span class="c1">// displayed on the screen</span>
+    <span class="n">pushMatrix</span><span class="o">();</span>
+    <span class="n">translate</span><span class="o">(</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="o">,</span> <span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="o">);</span>
+    <span class="n">rotate</span><span class="o">(</span><span class="n">radians</span><span class="o">(</span><span class="n">map</span><span class="o">(</span><span class="n">i</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">song</span><span class="o">.</span><span class="na">bufferSize</span><span class="o">(),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">360</span><span class="o">)));</span>
+
+    <span class="n">stroke</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">10</span><span class="o">);</span>
+    <span class="n">strokeWeight</span><span class="o">(</span><span class="mi">25</span><span class="o">);</span>
+    <span class="n">point</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">150</span> <span class="o">+</span> <span class="n">leftVal</span><span class="o">*</span><span class="mi">200</span><span class="o">);</span>
+    <span class="n">point</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">150</span> <span class="o">+</span> <span class="n">rightVal</span><span class="o">*</span><span class="mi">200</span><span class="o">);</span>
+
+    <span class="n">strokeWeight</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+    <span class="n">stroke</span><span class="o">(</span><span class="mi">220</span><span class="o">,</span> <span class="mi">220</span><span class="o">,</span> <span class="mi">20</span><span class="o">);</span>
+    <span class="n">point</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">150</span> <span class="o">+</span> <span class="n">leftVal</span><span class="o">*</span><span class="mi">150</span><span class="o">);</span>
+    <span class="n">stroke</span><span class="o">(</span><span class="mi">20</span><span class="o">,</span> <span class="mi">220</span><span class="o">,</span> <span class="mi">220</span><span class="o">);</span>
+    <span class="n">point</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">150</span> <span class="o">+</span> <span class="n">rightVal</span><span class="o">*</span><span class="mi">150</span><span class="o">);</span>
+
+    <span class="n">popMatrix</span><span class="o">();</span>
+
+    <span class="c1">// variable to store the average of the left and right channel</span>
+    <span class="c1">// audio.</span>
+    <span class="kt">float</span> <span class="n">avgVal</span> <span class="o">=</span> <span class="o">(</span><span class="n">leftVal</span> <span class="o">+</span> <span class="n">rightVal</span><span class="o">)/</span><span class="mi">2</span><span class="o">;</span>
+
+    <span class="c1">// display a graph based on the average values</span>
+    <span class="n">stroke</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">10</span><span class="o">);</span>
+    <span class="n">strokeWeight</span><span class="o">(</span><span class="mi">25</span><span class="o">);</span>
+    <span class="n">point</span><span class="o">((</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="o">)-</span><span class="mi">500</span><span class="o">+</span><span class="n">i</span><span class="o">,</span> <span class="o">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">100</span><span class="o">)</span> <span class="o">+</span> <span class="n">avgVal</span><span class="o">*</span><span class="mi">50</span><span class="o">);</span>
+    <span class="n">stroke</span><span class="o">(</span><span class="mi">20</span><span class="o">,</span> <span class="mi">220</span><span class="o">,</span> <span class="mi">20</span><span class="o">);</span>
+    <span class="n">strokeWeight</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+    <span class="n">point</span><span class="o">((</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="o">)-</span><span class="mi">500</span><span class="o">+</span><span class="n">i</span><span class="o">,</span> <span class="o">(</span><span class="n">height</span> <span class="o">-</span> <span class="mi">100</span><span class="o">)</span> <span class="o">+</span> <span class="n">avgVal</span><span class="o">*</span><span class="mi">50</span><span class="o">);</span>
+
+    <span class="c1">// a value to temprarily store the value to be sent.</span>
+    <span class="kt">int</span> <span class="n">tempVal</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)(</span><span class="n">avgVal</span><span class="o">*</span><span class="mi">255</span><span class="o">);</span>
+    <span class="n">tempVal</span> <span class="o">=</span> <span class="o">(</span><span class="kt">int</span><span class="o">)</span><span class="n">map</span><span class="o">(</span><span class="n">abs</span><span class="o">(</span><span class="n">tempVal</span><span class="o">),</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">255</span><span class="o">,</span> <span class="mi">255</span><span class="o">,</span> <span class="mi">0</span><span class="o">);</span>
+
+    <span class="c1">// setting the value to be sent to be equal to the</span>
+    <span class="c1">// temporary value.</span>
+    <span class="n">sendVal</span> <span class="o">=</span> <span class="n">tempVal</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="c1">// send out the value to your Arduino</span>
+  <span class="n">port</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">sendVal</span><span class="o">);</span>
+
+  <span class="c1">// a bar indicating the sent values</span>
+  <span class="n">noStroke</span><span class="o">();</span>
+  <span class="n">fill</span><span class="o">(</span><span class="mi">220</span><span class="o">,</span> <span class="mi">220</span><span class="o">,</span> <span class="mi">220</span><span class="o">);</span>
+  <span class="kt">float</span> <span class="n">rectLen</span> <span class="o">=</span> <span class="n">map</span><span class="o">(</span><span class="n">sendVal</span><span class="o">,</span> <span class="mi">255</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="mi">0</span><span class="o">,</span> <span class="n">width</span><span class="o">-</span><span class="mi">30</span><span class="o">);</span>
+  <span class="n">rect</span><span class="o">(</span><span class="mi">15</span><span class="o">,</span> <span class="mi">15</span><span class="o">,</span> <span class="n">rectLen</span><span class="o">,</span> <span class="mi">5</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="c1">// function to change play/pause the song each time the</span>
+<span class="c1">// left mouse button is pressed.</span>
+<span class="kt">void</span> <span class="nf">mousePressed</span><span class="o">()</span>
+<span class="o">{</span>
+  <span class="c1">// if the song is already being played</span>
+  <span class="c1">// we pause it and change the value of isPlaying variable</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">isPlaying</span><span class="o">)</span>
+  <span class="o">{</span>
+    <span class="n">song</span><span class="o">.</span><span class="na">pause</span><span class="o">();</span>
+    <span class="n">isPlaying</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="c1">// and if it is paused we play it and change &#39;isPlaying&#39; accordingly</span>
+  <span class="c1">// :P pretty simple right?</span>
+  <span class="k">else</span>
+  <span class="o">{</span>
+    <span class="n">song</span><span class="o">.</span><span class="na">play</span><span class="o">();</span>
+    <span class="n">isPlaying</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+<p>Before running the sketch you need to save it and place a sound file in the same folder that has your sketch. Also, change <tt class="docutils literal">&quot;song.mp3&quot;</tt> in</p>
+<div class="highlight"><pre><span></span><span class="n">song</span> <span class="o">=</span> <span class="n">minim</span><span class="o">.</span><span class="na">loadFile</span><span class="o">(</span><span class="s">&quot;song.mp3&quot;</span><span class="o">);</span>
+</pre></div>
+<p>to the file that you want to play. And yes, make changes to the <span class="caps">COM</span> port accordingly in the following&nbsp;line:</p>
+<div class="highlight"><pre><span></span><span class="n">port</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Serial</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">&quot;COM5&quot;</span><span class="o">,</span> <span class="mi">9600</span><span class="o">);</span>
+</pre></div>
+<p>Connect your Arduino and run your code in &#8216;Present&#8217; mode using the keyboard shortcut <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> (or by navigating to &#8216;Sketch &gt;&gt; Present&#8217; in the Processing <span class="caps">IDE</span>).</p>
+<p>Once you run your code, you need to click anywhere in the screen to play/pause the song. If the song is being played; you would see something that resembles the screenshot given below. The white bar on the top indicates the value being sent, the green graph on the bottom shows the average values in the audio buffer and the central visual changes according to the values in the left and right audio&nbsp;channels.</p>
+<img alt="processing sketch screenshot" src="/images/music_visualizer/screenshot_4.png" />
+<div class="admonition admonition-update">
+<p class="first admonition-title">update</p>
+<p class="last">Placing the sound file you want to play in the sketch folder everytime can get very tedious very soon. The <a class="reference external" href="http://abhikpal.github.io/blog/2014/02/01/music-visualizer-upgraded">upgraded version of the visualizer</a> uses the &#8216;Stereo Mix&#8217; recording device to grab eveything from your machine&#8217;s output audio stream, hence removing the unnessary hassle. The upgraded version can be found&nbsp;here.</p>
+</div>
+
+</article>
+<hr>
+  <section>
+  <h1>Comments</h1>
+  <div id="disqus_thread" aria-live="polite">
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+  <script type="text/javascript">
+    var disqus_shortname = 'the-abhikpal-weblog';
+    var disqus_identifier = '/blog/2014/01/16/simple-music-visualizer';
+    var disqus_url = 'http://abhikpal.github.io/blog/2014/01/16/simple-music-visualizer';
+    var disqus_title = 'Simple Music&nbsp;Visualizer';
+    (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  </section>
+    <footer>
+        <a class="link-no-box" href="/">Blog Home</a>
+        <a class="link-no-box" href="https://www.github.com/abhikpal">Github</a>
+        <a class="link-no-box" href="/blog/archives">Archives</a>
+
+        <br>
+
+        <a href="/">Abhik Pal's Weblog</a> was built using
+        <a href="http://docs.getpelican.com/en/stable/">Pelican</a>.
+        Original articles on this site are CC
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode">BY-NC-SA</a>
+        licensed unless otherwise stated.
+    </footer>
+    
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-81134558-2', 'auto');
+  ga('send', 'pageview');
+</script>
+</body>
+</html>

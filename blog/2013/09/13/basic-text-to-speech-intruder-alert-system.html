@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Abhik Pal">
+    <meta name="description" content="">
+    <title>Basic Text to Speech Intruder Alert&nbsp;System | Abhik Pal's Weblog</title>
+    <link rel="stylesheet" type="text/css" href="/theme/css/main.css">
+    <link rel="stylesheet" type="text/css" href="/theme/css/monokai.css">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+        
+<header>
+<h1>
+    <a href="/blog/2013/09/13/basic-text-to-speech-intruder-alert-system" id="page-title">Basic Text to Speech Intruder Alert&nbsp;System</a><br>
+    <small><time datetime="2013-09-13T23:38:43+05:30">
+        Friday September 13, 2013
+    </time></small>
+</h1>
+<small><a href="/blog/tags/arduino" class="link-box">arduino</a></small>
+<small><a href="/blog/tags/processing" class="link-box">processing</a></small>
+</header>
+<article id="article-main">
+<div class="sidebar">
+<p class="first sidebar-title">Fun&nbsp;Fact</p>
+<p class="last">The &#8220;cool&#8221; logo was designed by a 14-year-old Abhik Pal for his then pretentious&nbsp;blog.</p>
+</div>
+<p>Recently while wandering around the web I came across <tt class="docutils literal">ttslib</tt>, a Processing library developed by the folks over at <a class="reference external" href="http://www.local-guru.net">local-guru.net</a> that can be used produce speech from a processing sketch (also in a very mechanical &#8220;robotic&#8221; voice). I ended up using this library with Processing to make a super simple intruder alert&nbsp;system.</p>
+<p>The algorithm is as unsophisticated as an unsophisticated algorithm can be. The Arduino gets the reading from the <span class="caps">PIR</span> sensor and checks if it is high or low (0 or 1). If the <span class="caps">PIR</span> detects something the reading goes to 1 and a message is sent to the processing sketch which then uses the sent data to scream : &#8220;Intruder&nbsp;alert&#8221;.</p>
+<p>To build this simple “talking” intruder alert system you will need a <span class="caps">PIR</span> sensor, an Arduino, Processing, and the <cite>ttslib</cite> Processing library (available at <a class="reference external" href="http://www.local-guru.net/blog/pages/ttslib">http://www.local-guru.net/blog/pages/ttslib</a>).</p>
+<p>The finished circuit (no magic here) looks like&nbsp;this:</p>
+<img alt="finished circuit" src="/images/intruder_2.JPG" />
+<p>Simply connect the sensor to pin 7 of your Arduino and add a <span class="caps">LED</span> to pin 13 (adding the <span class="caps">LED</span> is trivial so you can skip it). Once the circuit is complete, upload the following code to your&nbsp;Arduino:</p>
+<div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * Arduino Code for</span>
+<span class="cm"> * Simple Talking Intruder Alert System</span>
+<span class="cm"> *</span>
+<span class="cm"> * Abhik Pal</span>
+<span class="cm"> */</span>
+
+<span class="cp">#define pirPin 7 </span><span class="c1">// PIR Sensor connected to pin 7</span>
+<span class="cp">#define ledPin 13 </span><span class="c1">// LED connected to pin 13</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="n">pirPin</span><span class="p">,</span> <span class="n">INPUT</span><span class="p">);</span>  <span class="c1">// Setting PIR pin as INPUT</span>
+  <span class="n">pinMode</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">OUTPUT</span><span class="p">);</span> <span class="c1">// Setting LED pin as OUTPUT</span>
+  <span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span> <span class="c1">// Starting Serial Communication @ 9600 bauds</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">loop</span><span class="p">()</span>
+<span class="p">{</span>
+  <span class="c1">// storing PIR state in a variable</span>
+  <span class="kt">int</span> <span class="n">pirState</span> <span class="o">=</span> <span class="n">digitalRead</span><span class="p">(</span><span class="n">pirPin</span><span class="p">);</span>
+
+  <span class="k">if</span><span class="p">(</span><span class="n">pirState</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="c1">// send value only if PIR detects something</span>
+    <span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">pirState</span><span class="p">);</span>
+
+    <span class="c1">// turn on LED if the PIR sensor detects something</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">HIGH</span><span class="p">);</span>
+
+    <span class="c1">// wait for a while</span>
+    <span class="n">delay</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="c1">// else turn off LED and send nothing</span>
+  <span class="k">else</span>
+    <span class="n">digitalWrite</span><span class="p">(</span><span class="n">ledPin</span><span class="p">,</span> <span class="n">LOW</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+<p>Next, download ttslib (from <a class="reference external" href="http://www.local-guru.net/blog/pages/ttslib">http://www.local-guru.net/blog/pages/ttslib</a>) and install it (on Windows place the extracted files inside <tt class="docutils literal">Documents/Processing/libraries</tt> or in your sketchbook&nbsp;location).</p>
+<p>Try running the example code available at the&nbsp;site.</p>
+<p>If all went fine type in the following code in&nbsp;Processing:</p>
+<div class="highlight"><pre><span></span><span class="cm">/*</span>
+<span class="cm"> * Simple Talking Intruder Alert System</span>
+<span class="cm"> * Using a PIR Sensor, Arduino and Processing</span>
+<span class="cm"> *</span>
+<span class="cm"> * uses the ttslib for processing</span>
+<span class="cm"> * can be found at:</span>
+<span class="cm"> * http://www.local-guru.net/blog/pages/ttslib</span>
+<span class="cm"> *</span>
+<span class="cm"> *</span>
+<span class="cm"> * Abhik Pal</span>
+<span class="cm"> */</span>
+
+<span class="c1">// Required to communicate with the Arduino</span>
+<span class="kn">import</span> <span class="nn">processing.serial.*</span><span class="o">;</span>
+
+<span class="c1">// Required to make the sketch &quot;talk&quot;</span>
+<span class="kn">import</span> <span class="nn">guru.ttslib.*</span><span class="o">;</span>
+
+<span class="n">Serial</span> <span class="n">port</span><span class="o">;</span>
+<span class="n">TTS</span> <span class="n">tts</span><span class="o">;</span>
+
+<span class="kt">void</span> <span class="nf">setup</span><span class="o">()</span>
+<span class="o">{</span>
+  <span class="n">size</span><span class="o">(</span><span class="mi">200</span><span class="o">,</span> <span class="mi">200</span><span class="o">);</span>
+  <span class="n">background</span><span class="o">(</span><span class="mi">20</span><span class="o">,</span> <span class="mi">20</span><span class="o">,</span> <span class="mi">20</span><span class="o">);</span>
+  <span class="n">tts</span> <span class="o">=</span> <span class="k">new</span> <span class="n">TTS</span><span class="o">();</span>
+
+  <span class="c1">// setting up the Serial port</span>
+  <span class="c1">// change &quot;COM6&quot; to the port your Arduino is connected.</span>
+  <span class="n">port</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Serial</span><span class="o">(</span><span class="k">this</span><span class="o">,</span> <span class="s">&quot;COM6&quot;</span><span class="o">,</span> <span class="mi">9600</span><span class="o">);</span>
+
+  <span class="c1">// serialEvent() will be called whenever &#39;\n&#39; is detected</span>
+  <span class="c1">// over the serial port</span>
+  <span class="n">port</span><span class="o">.</span><span class="na">bufferUntil</span><span class="o">(</span><span class="sc">&#39;\n&#39;</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="kt">void</span> <span class="nf">draw</span><span class="o">()</span>
+<span class="o">{</span>
+  <span class="c1">// Nothing to draw! :(</span>
+<span class="o">}</span>
+
+<span class="c1">// triggered whenever &#39;\n&#39; is sent over the Serial Port</span>
+<span class="kt">void</span> <span class="nf">serialEvent</span><span class="o">(</span><span class="n">Serial</span> <span class="n">port</span><span class="o">)</span>
+<span class="o">{</span>
+  <span class="c1">// Converting received value from string to an int</span>
+  <span class="n">String</span> <span class="n">input</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="na">readStringUntil</span><span class="o">(</span><span class="sc">&#39;\n&#39;</span><span class="o">);</span>
+  <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="kt">int</span><span class="o">(</span><span class="n">trim</span><span class="o">(</span><span class="n">input</span><span class="o">));</span>
+
+  <span class="c1">// checking the received value</span>
+  <span class="k">if</span> <span class="o">(</span><span class="n">value</span> <span class="o">==</span> <span class="mi">1</span><span class="o">)</span>
+  <span class="o">{</span>
+      <span class="n">tts</span><span class="o">.</span><span class="na">speak</span><span class="o">(</span><span class="s">&quot;Intruder Alert.&quot;</span><span class="o">);</span> <span class="c1">// speak &quot;Intruder alert!&quot;</span>
+  <span class="o">}</span>
+  <span class="k">else</span> <span class="o">{</span>
+    <span class="c1">// else do nothing</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+<img alt="the thing running" src="/images/intruder_1.png" />
+<p>Now, with the Arduino connected, and speakers turned on; run the Processing code. Waving your hands in front of the <span class="caps">PIR</span> sensor will make your computer warn &#8220;Intruder&nbsp;Alert!&#8221;.</p>
+<p>That&#8217;s it. You have built yourself a simple intruder alert system and it is actually &#8220;talking&#8221;. Using the same idea you can expand this project to read data from other sensors and react by making your computer speak other&nbsp;things.</p>
+<p>The code has been put on Github gist <a class="reference external" href="https://gist.github.com/abhikpal/6550687">here</a>.</p>
+
+</article>
+<hr>
+  <section>
+  <h1>Comments</h1>
+  <div id="disqus_thread" aria-live="polite">
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+  <script type="text/javascript">
+    var disqus_shortname = 'the-abhikpal-weblog';
+    var disqus_identifier = '/blog/2013/09/13/basic-text-to-speech-intruder-alert-system';
+    var disqus_url = 'http://abhikpal.github.io/blog/2013/09/13/basic-text-to-speech-intruder-alert-system';
+    var disqus_title = 'Basic Text to Speech Intruder Alert&nbsp;System';
+    (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  </section>
+    <footer>
+        <a class="link-no-box" href="/">Blog Home</a>
+        <a class="link-no-box" href="https://www.github.com/abhikpal">Github</a>
+        <a class="link-no-box" href="/blog/archives">Archives</a>
+
+        <br>
+
+        <a href="/">Abhik Pal's Weblog</a> was built using
+        <a href="http://docs.getpelican.com/en/stable/">Pelican</a>.
+        Original articles on this site are CC
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode">BY-NC-SA</a>
+        licensed unless otherwise stated.
+    </footer>
+    
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-81134558-2', 'auto');
+  ga('send', 'pageview');
+</script>
+</body>
+</html>
