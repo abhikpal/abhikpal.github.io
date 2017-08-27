@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="author" content="Abhik Pal">
+    <meta name="description" content="">
+    <title>p5: Google Summer of Code progress&nbsp;report | Abhik Pal's Weblog</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+  </head>
+  <body>
+        
+<header>
+<h1>
+    <a href="/blog/2017/08/27/p5-google-summer-of-code-progress-report" id="page-title">p5: Google Summer of Code progress&nbsp;report</a><br>
+    <small><time datetime="2017-08-27T00:21:31+01:00">
+        Sunday August 27, 2017
+    </time></small>
+</h1>
+<small><a href="/blog/tags/python" class="link-box">python</a></small>
+<small><a href="/blog/tags/processing" class="link-box">processing</a></small>
+<small><a href="/blog/tags/gsoc" class="link-box">gsoc</a></small>
+<small><a href="/blog/tags/p5" class="link-box">p5</a></small>
+</header>
+<article id="article-main">
+<div class="section" id="what-was-the-project-about">
+<h2>What was the project&nbsp;about?</h2>
+<p>The main goal of the project was to create a Python library based on
+Processing. While Processing&#8217;s emphasis on teaching programming in a
+visual context does make it easier for beginners, the fact that it&#8217;s
+based on Java often makes it look needlessly complex to most
+beginners. The main motivation behind creating p5 was to leverage
+Python&#8217;s readability and Processing&#8217;s emphasis on coding in a visual
+context to make programming easier to&nbsp;teach.</p>
+<p>The Python mode for Processing was also created for similar reasons,
+however, since Python mode was based on Jython, it limited the ways
+people could use Python. This was another motivation for creating p5,
+we wanted a library that used the Processing <span class="caps">API</span> while at the same
+time giving people access to Python&#8217;s large ecosystem of&nbsp;libraries.</p>
+</div>
+<div class="section" id="goals-for-the-gsoc">
+<h2>Goals for the <span class="caps">GSOC</span></h2>
+<p>We wanted to use the <span class="caps">GSOC</span> period to mostly create the internal
+plumbing required to write basic Processing sketches. In particular,
+our initial goals were&nbsp;to:</p>
+<ul class="simple">
+<li>Create a system that could work with Processing-style sketches i.e.,
+if the user defines a <cite>mouse_pressed</cite> function, p5 should be able to
+automatically attach an handler to it, if the user defines a <cite>draw</cite>
+function, p5 should call it repeatedly,&nbsp;etc</li>
+<li>Add support for basic 2D drawing &#8212; creating rectangles, lines,
+points, circles,&nbsp;etc.</li>
+<li>Add utility functions to parse colors, work with mathematics, create
+bezier curves,&nbsp;etc.</li>
+<li>Add support for loading and displaying&nbsp;images.</li>
+<li>Add support for displaying&nbsp;text.</li>
+</ul>
+<p>Since I hadn&#8217;t worked on OpenGL before the <span class="caps">GSOC</span> period, we soon ran
+into a massive optimization issue at the end of week eight. This meant
+that we weren&#8217;t able to implement image support and text support in&nbsp;p5.</p>
+</div>
+<div class="section" id="what-needs-to-be-done">
+<h2>What needs to be&nbsp;done?</h2>
+<p>Even though we met most of our goals for the <span class="caps">GSOC</span> period, p5 is far
+from being complete. Before we start adding more features, we would
+like to fix issues #9 and #10 first. Right now, p5 is practically
+useless on computers running Mac <span class="caps">OS</span>. Most sketches stop refreshing
+after drawing a couple of frames. Since I do most of the development
+work on a linux machine, I haven&#8217;t been able to debug this properly.
+We would really appreciate help from mac users who are willing to test
+things out for us and help us debug&nbsp;this.</p>
+<p>Our end goal is to implement the full Processing <span class="caps">API</span> in Python,
+however, we would like to focus on the following features in the next
+couple of&nbsp;months:</p>
+<ul class="simple">
+<li>Add support for live coding of sketches through the python <span class="caps">REPL</span>.</li>
+<li>Add support for&nbsp;images.</li>
+<li>Add support for text and&nbsp;fonts.</li>
+</ul>
+</div>
+<div class="section" id="using-p5-links-etc">
+<h2>Using p5, links,&nbsp;etc</h2>
+<p>p5 was released on the PyPI and can be installed using pip. For
+complete installation instructions, see the <a class="reference external" href="http://p5.readthedocs.io/en/latest/install.html">installation page</a> on the
+documentation. To know more about the project, use the following&nbsp;links:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://p5.readthedocs.io/en/latest/">Documentation</a></li>
+<li><a class="reference external" href="https://github.com/p5py/p5">Project source&nbsp;code</a></li>
+<li><a class="reference external" href="http://p5py.github.io/">Project home&nbsp;page</a></li>
+<li><a class="reference external" href="https://github.com/p5py/p5-examples">Repository with example p5&nbsp;sketches</a></li>
+</ul>
+</div>
+
+</article>
+<hr>
+  <section>
+  <h1>Comments</h1>
+  <div id="disqus_thread" aria-live="polite">
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+  
+  <script type="text/javascript">
+    var disqus_shortname = 'the-abhikpal-weblog';
+    var disqus_identifier = '/blog/2017/08/27/p5-google-summer-of-code-progress-report';
+    var disqus_url = 'http://abhikpal.github.io/blog/2017/08/27/p5-google-summer-of-code-progress-report';
+    var disqus_title = 'p5: Google Summer of Code progress&nbsp;report';
+    (function() {
+    var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+    dsq.src = "//" + disqus_shortname + '.disqus.com/embed.js';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  </section>
+    <footer>
+      <a class="link-no-box" href="/">Blog Home</a>
+      <a class="link-no-box" href="https://www.github.com/abhikpal">Github</a>
+      <a class="link-no-box" href="/blog/archives">Archives</a>
+      
+      <a class="link-no-box" href="http://abhikpal.github.io/feeds/all.atom.xml">Atom Feed</a>
+
+      <a class="link-no-box" href="http://abhikpal.github.io/feeds/all.rss.xml">RSS Feed</a>
+
+      <br>
+
+      <a href="/">Abhik Pal's Weblog</a> was built using
+      <a href="http://docs.getpelican.com/en/stable/">Pelican</a>.
+      Original articles on this site are CC
+      <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode">BY-NC-SA</a>
+      licensed unless otherwise stated.
+    </footer>
+    <noscript id="deferred-styles">
+      <link rel="stylesheet" type="text/css" href="/theme/css/main.css">
+      <link rel="stylesheet" type="text/css" href="/theme/css/syntax-light.css">  
+    </noscript>
+    <script>
+      var loadDeferredStyles = function() {
+      var addStylesNode = document.getElementById("deferred-styles");
+      var replacement = document.createElement("div");
+      replacement.innerHTML = addStylesNode.textContent;
+      document.body.appendChild(replacement)
+      addStylesNode.parentElement.removeChild(addStylesNode);
+      
+      };
+      var raf = requestAnimationFrame || mozRequestAnimationFrame ||
+      webkitRequestAnimationFrame || msRequestAnimationFrame;
+      if (raf) raf(function() { window.setTimeout(loadDeferredStyles, 0); });
+      else window.addEventListener('load', loadDeferredStyles);
+    </script>    
+    
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-81134558-2', 'auto');
+  ga('send', 'pageview');
+</script>
+  </body>
+</html>
