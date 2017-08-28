@@ -16,24 +16,48 @@ time giving people access to Python&amp;#8217;s large ecosystem of&amp;nbsp;libr
 &lt;/div&gt;
 &lt;div class="section" id="goals-for-the-gsoc"&gt;
 &lt;h2&gt;Goals for the &lt;span class="caps"&gt;GSOC&lt;/span&gt;&lt;/h2&gt;
-&lt;p&gt;We wanted to use the &lt;span class="caps"&gt;GSOC&lt;/span&gt; period to mostly create the internal
-plumbing required to write basic Processing sketches. In particular,
-our initial goals were&amp;nbsp;to:&lt;/p&gt;
+&lt;p&gt;We were able to meet most of our goals for the summer of code period.
+These&amp;nbsp;included:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;Create a system that could work with Processing-style sketches i.e.,
-if the user defines a &lt;cite&gt;mouse_pressed&lt;/cite&gt; function, p5 should be able to
-automatically attach an handler to it, if the user defines a &lt;cite&gt;draw&lt;/cite&gt;
-function, p5 should call it repeatedly,&amp;nbsp;etc&lt;/li&gt;
-&lt;li&gt;Add support for basic 2D drawing &amp;#8212; creating rectangles, lines,
-points, circles,&amp;nbsp;etc.&lt;/li&gt;
-&lt;li&gt;Add utility functions to parse colors, work with mathematics, create
-bezier curves,&amp;nbsp;etc.&lt;/li&gt;
-&lt;li&gt;Add support for loading and displaying&amp;nbsp;images.&lt;/li&gt;
-&lt;li&gt;Add support for displaying&amp;nbsp;text.&lt;/li&gt;
+&lt;li&gt;[ &lt;strong&gt;&lt;span class="caps"&gt;COMPLETED&lt;/span&gt;&lt;/strong&gt; ] Create a system that could work with
+Processing-style sketches i.e., if the user defines a
+&lt;code&gt;mouse_pressed&lt;/code&gt; function, p5 should be able to automatically
+attach an handler to it, if the user defines a &lt;code&gt;draw&lt;/code&gt;
+function, p5 should call it repeatedly,&amp;nbsp;etc.&lt;/li&gt;
+&lt;li&gt;[ &lt;strong&gt;&lt;span class="caps"&gt;COMPLETED&lt;/span&gt;&lt;/strong&gt; ] Add support for for basic 2D drawing &amp;#8212; creating
+rectangles, lines, points, circles, etc. We also added two new
+features to the Processing &lt;span class="caps"&gt;API&lt;/span&gt;:&lt;ul&gt;
+&lt;li&gt;Since tuples, lists, and vectors are often used to store
+coordinates in space, we changed the original Processing &lt;span class="caps"&gt;API&lt;/span&gt; to
+use tuple-like objects by default. So, if a user wants to draw a
+line from &lt;code&gt;start = (0, 0)&lt;/code&gt; to &lt;code&gt;end = (100, 120)&lt;/code&gt;, they
+can just call &lt;code&gt;line(start, end)&lt;/code&gt; instead of
+&lt;code&gt;line(start[0], start[1], end[0], end[1])&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;Added new methods to draw circles and&amp;nbsp;squares.&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;Since I hadn&amp;#8217;t worked on OpenGL before the &lt;span class="caps"&gt;GSOC&lt;/span&gt; period, we soon ran
-into a massive optimization issue at the end of week eight. This meant
-that we weren&amp;#8217;t able to implement image support and text support in&amp;nbsp;p5.&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;[ &lt;strong&gt;&lt;span class="caps"&gt;COMPLETED&lt;/span&gt;&lt;/strong&gt; ] Add a color parsing system similar to
+Processing&amp;#8217;s. We also extend the Processing &lt;span class="caps"&gt;API&lt;/span&gt; using Python&amp;#8217;s
+keyword arguments so users can use commands like
+&lt;code&gt;fill(red=255, green=127, blue=51, alpha=127)&lt;/code&gt;.&lt;/li&gt;
+&lt;li&gt;[ &lt;strong&gt;&lt;span class="caps"&gt;COMPLETED&lt;/span&gt;&lt;/strong&gt; ] Add utility functions to perform basic
+mathematical operations, computing trig-functions, and generating
+points for curves and bezier splines. We also tweaked Processing&amp;#8217;s
+&lt;code&gt;PVector&lt;/code&gt; class to make it more intuitive to use. For example,
+the syntax for adding vectors in p5 is &lt;code&gt;vec_sum = vec_1 + vec_2&lt;/code&gt;
+where &lt;code&gt;vec_1&lt;/code&gt; and &lt;code&gt;vec_2&lt;/code&gt; are&amp;nbsp;vectors.&lt;/li&gt;
+&lt;li&gt;[ &lt;strong&gt;&lt;span class="caps"&gt;COMPLETED&lt;/span&gt;&lt;/strong&gt; ] &lt;a class="reference external" href="https://github.com/p5py/p5/releases/tag/v0.3.0a1"&gt;Release p5&lt;/a&gt; to the Python
+Package&amp;nbsp;Index.&lt;/li&gt;
+&lt;li&gt;[ &lt;strong&gt;&lt;span class="caps"&gt;COMPLETED&lt;/span&gt;&lt;/strong&gt; ] Add &lt;a class="reference external" href="https://github.com/p5py/p5-examples"&gt;example code&lt;/a&gt; and &lt;a class="reference external" href="http://p5.readthedocs.io/en/latest"&gt;documentation&lt;/a&gt; to help people get&amp;nbsp;started.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;We had initially planned on adding support for displaying text and
+images, but unfortunately weren&amp;#8217;t able to do so in the &lt;span class="caps"&gt;GSOC&lt;/span&gt; period.
+Before week 8 of the coding period, our code was using immediate mode
+rendering and our sketches would slow down under load. Instead of
+implementing new features like image support and text support we
+decided to address the optimizing issue first and re-wrote the
+rendering code to use retained mode rendering and use numpy for all
+internal&amp;nbsp;computations.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="what-needs-to-be-done"&gt;
 &lt;h2&gt;What needs to be&amp;nbsp;done?&lt;/h2&gt;
@@ -54,13 +78,13 @@ couple of&amp;nbsp;months:&lt;/p&gt;
 &lt;li&gt;Add support for text and&amp;nbsp;fonts.&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/div&gt;
-&lt;div class="section" id="using-p5-links-etc"&gt;
-&lt;h2&gt;Using p5, links,&amp;nbsp;etc&lt;/h2&gt;
+&lt;div class="section" id="using-p5-links-to-things-etc"&gt;
+&lt;h2&gt;Using p5, links to things,&amp;nbsp;etc&lt;/h2&gt;
 &lt;p&gt;p5 was released on the PyPI and can be installed using pip. For
 complete installation instructions, see the &lt;a class="reference external" href="http://p5.readthedocs.io/en/latest/install.html"&gt;installation page&lt;/a&gt; on the
 documentation. To know more about the project, use the following&amp;nbsp;links:&lt;/p&gt;
 &lt;ul class="simple"&gt;
-&lt;li&gt;&lt;a class="reference external" href="http://p5.readthedocs.io/en/latest/"&gt;Documentation&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class="reference external" href="http://p5.readthedocs.io/en/latest"&gt;Documentation&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a class="reference external" href="https://github.com/p5py/p5"&gt;Project source&amp;nbsp;code&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a class="reference external" href="http://p5py.github.io/"&gt;Project home&amp;nbsp;page&lt;/a&gt;&lt;/li&gt;
 &lt;li&gt;&lt;a class="reference external" href="https://github.com/p5py/p5-examples"&gt;Repository with example p5&amp;nbsp;sketches&lt;/a&gt;&lt;/li&gt;
